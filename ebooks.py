@@ -58,12 +58,12 @@ def filter_status(text):
     text = re.sub(r'(\#|@|(h\/t)|(http))\S+', '', text)  # Take out URLs, hashtags, hts, etc.
     text = re.sub('\s+', ' ', text)  # collaspse consecutive whitespace to single spaces.
     text = re.sub('\n', ' ', text)  # collaspse \n to single space
-    text = re.sub('(\@[a-zA-Z_0-9]{0,15})', '', text)  # Don't @ anyone
-    text = re.sub(r'\"|\(|\)', '', text)  # take out quotes.
+    text = re.sub(r'\"|\(|\)|\'', '', text)  # take out quotes.
     text = re.sub(r'\s+\(?(via|says)\s@\w+\)?', '', text)  # remove attribution
     text = re.sub(r'<[^>]*>','', text) #strip out html tags from mastodon posts
-    
     text = re.sub(r'\xe9', 'e', text)  # take out accented e
+    text = re.sub(r'(\@[a-zA-Z_0-9]{0,15})', '', text)  # Don't @ anyone
+    text = re.sub(r'^\s', '', text)  # Remove leading whitespace 
     return text
 
 
@@ -234,14 +234,17 @@ if __name__ == "__main__":
                 else:
                     print("TOO SIMILAR: " + ebook_status)
                     sys.exit()
+            #clean the tweet before sending it out        
+            print("before cleaning: " + ebook_status)
+            ebook_status = filter_status(ebook_status)
+            print("after cleaning: " + ebook_status)
 
             if not DEBUG:
                 if ENABLE_TWITTER_POSTING:
                     status = api.PostUpdate(ebook_status)
                 if ENABLE_MASTODON_POSTING:
                     status = mastoapi.toot(ebook_status)
-            print(ebook_status)
-            print("after cleaning" + filter_status(ebook_status))
+
 
         elif not ebook_status:
             print("Status is empty, sorry.")
