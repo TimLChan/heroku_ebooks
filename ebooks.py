@@ -51,15 +51,18 @@ def entity(text):
 
 
 def filter_status(text):
-    text = re.sub(r'\b(RT|MT) .+', '', text)  # take out anything after RT or MT
-    text = re.sub(r'(\#|@|(h\/t)|(http))\S+', '', text)  # Take out URLs, hashtags, hts, etc.
-    text = re.sub('\s+', ' ', text)  # collaspse consecutive whitespace to single spaces.
-    text = re.sub(r'\"|\(|\)', '', text)  # take out quotes.
-    text = re.sub(r'\s+\(?(via|says)\s@\w+\)?', '', text)  # remove attribution
-    text = re.sub(r'<[^>]*>','', text) #strip out html tags from mastodon posts
     htmlsents = re.findall(r'&\w+;', text)
     for item in htmlsents:
         text = text.replace(item, entity(item))
+    text = re.sub(r'\b(RT|MT) .+', '', text)  # take out anything after RT or MT
+    text = re.sub(r'(\#|@|(h\/t)|(http))\S+', '', text)  # Take out URLs, hashtags, hts, etc.
+    text = re.sub('\s+', ' ', text)  # collaspse consecutive whitespace to single spaces.
+    text = re.sub('\n', ' ', text)  # collaspse \n to single space
+    text = re.sub('(\@[a-zA-Z_0-9]{0,15})', '', text)  # Don't @ anyone
+    text = re.sub(r'\"|\(|\)', '', text)  # take out quotes.
+    text = re.sub(r'\s+\(?(via|says)\s@\w+\)?', '', text)  # remove attribution
+    text = re.sub(r'<[^>]*>','', text) #strip out html tags from mastodon posts
+    
     text = re.sub(r'\xe9', 'e', text)  # take out accented e
     return text
 
@@ -238,6 +241,7 @@ if __name__ == "__main__":
                 if ENABLE_MASTODON_POSTING:
                     status = mastoapi.toot(ebook_status)
             print(ebook_status)
+            print("after cleaning" + filter_status(ebook_status))
 
         elif not ebook_status:
             print("Status is empty, sorry.")
